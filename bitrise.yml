@@ -1,0 +1,45 @@
+---
+format_version: "13"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: android
+
+app:
+  envs:
+  - PROJECT_LOCATION: .
+  - MODULE: app
+  - VARIANT: debug
+
+workflows:
+  safe_build:
+    summary: Testy jednostkowe, skan mobsfscan, budowa APK i deploy do bitrise.io
+    steps:
+    - git-clone@8: {}
+    - android-unit-test@1:
+        title: Unit tests
+        inputs:
+        - project_location: $PROJECT_LOCATION
+        - module: $MODULE
+        - variant: $VARIANT
+    - script@1:
+        title: Mobsfscan
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            python3 -m venv "$HOME/mobsfscan-venv"
+            source "$HOME/mobsfscan-venv/bin/activate"
+            pip install --quiet mobsfscan semgrep
+            # mobsfscan zwraca kod != 0, gdy znajdzie problem o poziomie ERROR
+            mobsfscan .
+    - android-build@1:
+        title: Build APK
+        inputs:
+        - project_location: $PROJECT_LOCATION
+        - module: $MODULE
+        - variant: $VARIANT
+        - build_type: apk
+    - deploy-to-bitrise-io@2: {}
+
+trigger_map:
+- pull_request_target_branch: main
+  workflow: safe_build
