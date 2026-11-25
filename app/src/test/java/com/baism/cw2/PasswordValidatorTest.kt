@@ -31,4 +31,9 @@ class PasswordValidatorTest {
     fun describe_returnsMessageForWeakPassword() {
         assertEquals("Hasło jest za słabe", PasswordValidator.describe("abc"))
     }
+
+    @Test
+    fun passwordWithoutLowercase_isRejected() {
+        assertFalse(PasswordValidator.isStrong("DUZELITERY123"))
+    }
 }
