@@ -12,6 +12,9 @@ app:
 workflows:
   safe_build:
     summary: Testy jednostkowe, skan mobsfscan, budowa APK i deploy do bitrise.io
+    triggers:
+      pull_request:
+      - target_branch: main
     steps:
     - git-clone@8: {}
     - android-unit-test@1:
@@ -39,7 +42,3 @@ workflows:
         - variant: $VARIANT
         - build_type: apk
     - deploy-to-bitrise-io@2: {}
-
-trigger_map:
-- pull_request_target_branch: main
-  workflow: safe_build
